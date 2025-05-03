@@ -1,6 +1,8 @@
 package com.example.budgetly.ui
 
 
+import android.app.DatePickerDialog
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -13,17 +15,20 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.AlertDialog
@@ -36,6 +41,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -47,17 +53,16 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.budgetly.R
 import com.example.budgetly.data.Transactions
+import java.util.Calendar
 import kotlin.math.roundToInt
 
 
@@ -66,13 +71,33 @@ import kotlin.math.roundToInt
 fun TransactionsPage (currencyViewModel: currencyViewModel){
     val selectedCurrency = currencyViewModel.selectedCurrency.value
     val viewModel: budgetlyViewModel = viewModel()
-    var showPopUp by remember { mutableStateOf(false) }
+    val showPopUp = rememberSaveable { mutableStateOf(false) }
+    val errorMessage = rememberSaveable { mutableStateOf("") }
+    val showErrorMessage = rememberSaveable { mutableStateOf(false) }
     var transactionType by rememberSaveable { mutableStateOf("Income") }
-    var amount by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var date by remember { mutableStateOf(TextFieldValue(""))}
+
+    val amount = rememberSaveable { mutableStateOf("") }
+    val description = rememberSaveable { mutableStateOf("") }
+    val date = rememberSaveable { mutableStateOf("") }
+
     val transactions by viewModel.transactionData.observeAsState(emptyList())
     val context = LocalContext.current
+    val calendar = Calendar.getInstance()
+
+    // DATE PICKER FUNCTION
+    fun showDatePickerDialog() {
+        val datePickerDialog = DatePickerDialog(
+            context,
+            { _, year, monthOfYear, dayOfMonth ->
+                // SET SELECTED DATE TO THE DATE VARIABLE
+                date.value = "$dayOfMonth/${monthOfYear + 1}/$year"
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        )
+        datePickerDialog.show()
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -98,7 +123,7 @@ fun TransactionsPage (currencyViewModel: currencyViewModel){
                         .clip(RoundedCornerShape(10.dp))
                         .background(Color(0xFF21C277))
                         .clickable {
-                            showPopUp = true
+                            showPopUp.value = true
                         }
                 ) {
                     Icon(
@@ -110,112 +135,176 @@ fun TransactionsPage (currencyViewModel: currencyViewModel){
                 }
             }
 
-            if (showPopUp){
+            if (showPopUp.value){
                 AlertDialog(
                     modifier = Modifier
                         .clip(RoundedCornerShape(10.dp))
                         .background(Color.White)
                         .padding(20.dp),
-                    onDismissRequest = { showPopUp = false }
+                    onDismissRequest = { showPopUp.value = false }
                 ) {
-                    Column {
-                        // INCOME AND EXPENSE TOGGLES
-                        Row {
-                            // Income Button
-                            TransactionTypeButton(
-                                stringResource(R.string.income),
-                                transactionType == "Income"
-                            ) { transactionType = "Income" }
-                            // Expense Button
-                            TransactionTypeButton(
-                                stringResource(R.string.expense),
-                                transactionType == "Expense"
-                            ) { transactionType = "Expense" }
+                    LazyColumn {
+                        item{
+                            // INCOME AND EXPENSE TOGGLES
+                            Row {
+                                // Income Button
+                                TransactionTypeButton(
+                                    stringResource(R.string.income),
+                                    transactionType == "Income"
+                                ) { transactionType = "Income" }
+                                // Expense Button
+                                TransactionTypeButton(
+                                    stringResource(R.string.expense),
+                                    transactionType == "Expense"
+                                ) { transactionType = "Expense" }
+                            }
                         }
-                        // FORM
-                        // Amount Text Field
-                        OutlinedTextField(
-                            value = amount,
-                            onValueChange = { input ->
-                                if (input.matches(Regex("^\\d*\\.?\\d*\$"))) {
-                                    amount = input
-                                }
-                            },
-                            label = { Text(stringResource(R.string.amount)) },
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                        )
-                        // Description Text Field
-                        OutlinedTextField(
-                            value = description,
-                            onValueChange = { description = it },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(200.dp),
-                            label = { Text(stringResource(R.string.description)) },
-                        )
-                        // Date Text Field
-                        OutlinedTextField(
-                            value = date,
-                            onValueChange = { input ->
-                                val digits = input.text.filter { it.isDigit() }
-                                val formatted = buildString {
-                                    for (i in digits.indices) {
-                                        append(digits[i])
-                                        if ((i == 1 || i == 3) && i != digits.lastIndex) append('/')
+
+                        item {
+                            // FORM
+                            // Amount Text Field
+                            OutlinedTextField(
+                                value = amount.value,
+                                onValueChange = { input ->
+                                    if (input.matches(Regex("^\\d*\\.?\\d*\$"))) {
+                                        amount.value = input
                                     }
-                                }
-                                val newCursorPosition = when {
-                                    formatted.length > input.text.length && (formatted.length == 3 || formatted.length == 6) -> input.selection.start + 3
-                                    else -> input.selection.start
-                                }
-                                if (formatted.length <= 10) {
-                                    date = TextFieldValue(
-                                        text = formatted,
-                                        selection = TextRange(newCursorPosition.coerceAtMost(formatted.length))
+                                },
+                                label = { Text(stringResource(R.string.amount)) },
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                            )
+                        }
+
+                        item {
+                            // Description Text Field
+                            OutlinedTextField(
+                                value = description.value,
+                                onValueChange = { description.value = it },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(200.dp),
+                                label = { Text(stringResource(R.string.description)) },
+                            )
+                        }
+
+                        item {
+                            // Date Text Field
+                            Row (
+                                modifier = Modifier.fillMaxHeight(),
+                                verticalAlignment = Alignment.Bottom,
+                            ){
+
+                                Button(
+                                    modifier = Modifier.height(56.dp),
+                                    shape = RoundedCornerShape(4.dp),
+                                    onClick = { showDatePickerDialog() },
+                                    border = BorderStroke(2.dp, Color(0xFF21C277)),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0xFF21C277),
+                                        contentColor = Color.White
+                                    ),
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.DateRange,
+                                        contentDescription = "Calendar",
+                                        modifier = Modifier.size(25.dp),
                                     )
                                 }
-                            },
-                            label = { Text(stringResource(R.string.date_dd_mm_yyyy)) },
-                            placeholder = { Text(stringResource(R.string.dd_mm_yyyy)) },
-                            singleLine = true,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            modifier = Modifier.fillMaxWidth()
-                        )
-
-                        // ADD TRANSACTION BUTTON
-                        Button(
-                            modifier = Modifier.padding(top = 5.dp),
-                            shape = RoundedCornerShape(8.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF21C277),
-                                contentColor = Color.White
-                            ),
-                            onClick = {
-                                val amountDouble = amount.toDoubleOrNull() ?: 0.0
-                                val type = if (transactionType == "Income") com.example.budgetly.data.transactionType.INCOME else com.example.budgetly.data.transactionType.EXPENSE
-                                val newTransaction = Transactions(
-                                    transactionID = 0, // Let Room auto-generate
-                                    description = description,
-                                    date = date.text,
-                                    amount = amountDouble,
-                                    transactionType = type
+                                Spacer(modifier = Modifier.width(8.dp))
+                                // Date Text Field
+                                OutlinedTextField(
+                                    value = date.value,
+                                    onValueChange = {},
+                                    label = { Text(stringResource(R.string.date_dd_mm_yyyy)) },
+                                    placeholder = { Text(stringResource(R.string.dd_mm_yyyy)) },
+                                    singleLine = true,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { showDatePickerDialog() }
                                 )
-                                viewModel.insertTransaction(newTransaction)
-                                showPopUp = false
-                                Toast.makeText(
-                                    context,
-                                    "Transaction Added",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                amount = ""
-                                description = ""
-                                date = TextFieldValue("")
                             }
-                        ) {
-                            TextStyle(stringResource(R.string.add_transaction_2), 15, FontWeight.Black, Color.White)
+
                         }
+
+                        item {
+                            // ADD TRANSACTION BUTTON
+                            Button(
+                                modifier = Modifier.padding(top = 5.dp),
+                                shape = RoundedCornerShape(8.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFF21C277),
+                                    contentColor = Color.White
+                                ),
+                                onClick = {
+                                    Log.v("showError", "Before Check")
+                                    Log.v("showError", "Error: ${amount.value.toIntOrNull()}")
+
+                                    // CHECK ALL INPUTS FOR ERRORS
+                                    if (amount.value.toIntOrNull() == null) {
+                                        errorMessage.value = "You must enter an amount"
+                                        showErrorMessage.value = true
+                                    } else if (amount.value.toIntOrNull() == 0) {
+                                        errorMessage.value = "Amount must be greater than 0"
+                                        showErrorMessage.value = true
+                                    } else if (description.value == "") {
+                                        errorMessage.value = "You must add a description"
+                                        showErrorMessage.value = true
+                                    } else if (date.value == "") {
+                                        errorMessage.value = "You must add a date"
+                                        showErrorMessage.value = true
+                                    } else{
+                                        showErrorMessage.value = false
+                                    }
+
+                                    // ADD TO ROOM DB
+                                    if (!showErrorMessage.value){
+                                        val amountDouble = amount.value.toDoubleOrNull() ?: 0.0
+                                        val type = if (transactionType == "Income") com.example.budgetly.data.transactionType.INCOME else com.example.budgetly.data.transactionType.EXPENSE
+                                        val newTransaction = Transactions(
+                                            transactionID = 0,
+                                            description = description.value,
+                                            date = date.value,
+                                            amount = amountDouble,
+                                            transactionType = type
+                                        )
+                                        viewModel.insertTransaction(newTransaction)
+
+                                        // REMOVE POP-UP AND CLEAR TEXT FIELDS
+                                        showPopUp.value = false
+                                        Toast.makeText(
+                                            context,
+                                            "Transaction Added",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        amount.value = ""
+                                        description.value = ""
+                                        date.value = ""
+                                    }
+
+                                }
+                            ) {
+                                TextStyle(stringResource(R.string.add_transaction_2), 15, FontWeight.Black, Color.White)
+                            }
+                        }
+
+                        item{
+                            if (showErrorMessage.value){
+                                Text(
+                                    text = errorMessage.value,
+                                    style = TextStyle(
+                                        fontSize = 16.sp,
+                                        fontFamily = soraFont,
+                                        fontWeight = FontWeight.Light,
+                                        color = Color.Red
+                                    ),
+                                    modifier = Modifier.padding(top = 10.dp)
+                                )
+                            }
+                        }
+
+
 
                     }
                 }
@@ -265,6 +354,7 @@ fun TransactionTypeButton(
     }
 }
 
+
 // TEXT STYLE COMPOSABLE
 @Composable
 fun TextStyle (text : String, size : Int, weight: FontWeight, colour : Color){
@@ -283,7 +373,7 @@ fun TextStyle (text : String, size : Int, weight: FontWeight, colour : Color){
 fun TransactionItem (transaction: Transactions, selectedCurrency : String, viewModel: budgetlyViewModel, page: String){
     val boxWidth = 300f
     val maxSwipeLeft = -boxWidth * 0.7f
-    var offsetX by remember { mutableStateOf(0f) }
+    var offsetX by remember { mutableFloatStateOf(0f) }
     Box(
         modifier = Modifier
             .padding(top = 20.dp)
