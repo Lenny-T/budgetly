@@ -26,6 +26,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -53,11 +54,11 @@ val soraFont = FontFamily(
     Font(R.font.sora)
 )
 
-val padding = 15
+const val padding = 15
 
 @Composable
 fun SettingsScreen(currencyViewModel: currencyViewModel) {
-    var currencyExchange by rememberSaveable { mutableStateOf(1) }
+//    var currencyExchange by rememberSaveable { mutableIntStateOf(1) }
     val currentCurrency = currencyViewModel.selectedCurrency.value
     LazyColumn(
         modifier = Modifier
@@ -82,7 +83,7 @@ fun SettingsScreen(currencyViewModel: currencyViewModel) {
 @Composable
 fun CurrencyChange(currency: String, currencyViewModel: currencyViewModel) {
     var expanded by remember { mutableStateOf(false) }
-    var selectedCurrency by rememberSaveable { mutableStateOf(0) }
+    var selectedCurrency by rememberSaveable { mutableIntStateOf(0) }
     val context = LocalContext.current
     val viewModel: budgetlyViewModel = viewModel()
     var showPopUp by remember { mutableStateOf(false) }

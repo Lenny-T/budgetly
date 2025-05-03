@@ -52,11 +52,11 @@ fun DashboardScreen (currencyViewModel: currencyViewModel){
     val currencySymbol = if (selectedCurrency == "GBP" ) "£ " else if (selectedCurrency == "USD") "$ " else "€ "
     val viewModel: budgetlyViewModel = viewModel()
     val transactions by viewModel.transactionData.observeAsState(emptyList())
-    var totalIncome by remember { mutableStateOf(0.0) }
+    var totalIncome by remember { mutableDoubleStateOf(0.0) }
     var totalIncomeMessage by remember { mutableStateOf("0.0") }
     LaunchedEffect(Unit) {
         viewModel.getTotalType(transactionType.INCOME) { total ->
-            totalIncome = total.toDouble()
+            totalIncome = total
             totalIncomeMessage = totalIncome.toString()
         }
     }
@@ -64,7 +64,7 @@ fun DashboardScreen (currencyViewModel: currencyViewModel){
     var totalExpenseMessage by remember { mutableStateOf("0.0") }
     LaunchedEffect(Unit) {
         viewModel.getTotalType(transactionType.EXPENSE) { total ->
-            totalExpense = total.toDouble()
+            totalExpense = total
             totalExpenseMessage = totalExpense.toString()
         }
     }
