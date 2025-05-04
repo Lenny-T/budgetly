@@ -105,6 +105,7 @@ fun TransactionsPage (currencyViewModel: currencyViewModel){
             .fillMaxHeight()
             .fillMaxWidth(),
     ){
+        // HEADING WITH ADD TRANSACTION BUTTON
         item{
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -112,6 +113,8 @@ fun TransactionsPage (currencyViewModel: currencyViewModel){
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 TextStyle(stringResource(R.string.add_transaction), 28, FontWeight.Black, Color.Black)
+
+                // ADD TRANSACTION BUTTON
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
@@ -135,6 +138,7 @@ fun TransactionsPage (currencyViewModel: currencyViewModel){
                 }
             }
 
+            // TRANSACTION FORM MODAL
             if (showPopUp.value){
                 AlertDialog(
                     modifier = Modifier
@@ -147,12 +151,12 @@ fun TransactionsPage (currencyViewModel: currencyViewModel){
                         item{
                             // INCOME AND EXPENSE TOGGLES
                             Row {
-                                // Income Button
+                                // INCOME BUTTON
                                 TransactionTypeButton(
                                     stringResource(R.string.income),
                                     transactionType == "Income"
                                 ) { transactionType = "Income" }
-                                // Expense Button
+                                // EXPENSES BUTTON
                                 TransactionTypeButton(
                                     stringResource(R.string.expense),
                                     transactionType == "Expense"
@@ -160,9 +164,8 @@ fun TransactionsPage (currencyViewModel: currencyViewModel){
                             }
                         }
 
+                        // AMOUNT TEXT FIELD
                         item {
-                            // FORM
-                            // Amount Text Field
                             OutlinedTextField(
                                 value = amount.value,
                                 onValueChange = { input ->
@@ -177,8 +180,8 @@ fun TransactionsPage (currencyViewModel: currencyViewModel){
                             )
                         }
 
+                        // DESCRIPTION TEXT FIELD
                         item {
-                            // Description Text Field
                             OutlinedTextField(
                                 value = description.value,
                                 onValueChange = { description.value = it },
@@ -189,13 +192,14 @@ fun TransactionsPage (currencyViewModel: currencyViewModel){
                             )
                         }
 
+                        // DATE TEXT FIELD
                         item {
-                            // Date Text Field
                             Row (
                                 modifier = Modifier.fillMaxHeight(),
                                 verticalAlignment = Alignment.Bottom,
                             ){
 
+                                // BUTTON TO OPEN DATE PICKED
                                 Button(
                                     modifier = Modifier.height(56.dp),
                                     shape = RoundedCornerShape(4.dp),
@@ -213,7 +217,7 @@ fun TransactionsPage (currencyViewModel: currencyViewModel){
                                     )
                                 }
                                 Spacer(modifier = Modifier.width(8.dp))
-                                // Date Text Field
+                                // DATE FORMAT DISPLAY
                                 OutlinedTextField(
                                     value = date.value,
                                     onValueChange = {},
@@ -228,8 +232,8 @@ fun TransactionsPage (currencyViewModel: currencyViewModel){
 
                         }
 
+                        // ADD TRANSACTION BUTTON
                         item {
-                            // ADD TRANSACTION BUTTON
                             Button(
                                 modifier = Modifier.padding(top = 5.dp),
                                 shape = RoundedCornerShape(8.dp),
@@ -258,7 +262,7 @@ fun TransactionsPage (currencyViewModel: currencyViewModel){
                                         showErrorMessage.value = false
                                     }
 
-                                    // ADD TO ROOM DB
+                                    // ADD TO ROOM DB IF NO ERRORS
                                     if (!showErrorMessage.value){
                                         val amountDouble = amount.value.toDoubleOrNull() ?: 0.0
                                         val type = if (transactionType == "Income") com.example.budgetly.data.transactionType.INCOME else com.example.budgetly.data.transactionType.EXPENSE
@@ -289,6 +293,7 @@ fun TransactionsPage (currencyViewModel: currencyViewModel){
                             }
                         }
 
+                        // ERROR MESSAGE
                         item{
                             if (showErrorMessage.value){
                                 Text(
@@ -310,6 +315,7 @@ fun TransactionsPage (currencyViewModel: currencyViewModel){
                 }
             }
         }
+        // IF THERE ARE NO TRANSACTION
         if (transactions.isEmpty()) {
             item {
                 TextStyle(stringResource(R.string.no_transactions), 20, FontWeight.Light, Color(0xFF21C277))
@@ -369,11 +375,13 @@ fun TextStyle (text : String, size : Int, weight: FontWeight, colour : Color){
     )
 }
 
+// TRANSACTION ITEMS
 @Composable
 fun TransactionItem (transaction: Transactions, selectedCurrency : String, viewModel: budgetlyViewModel, page: String){
     val boxWidth = 300f
     val maxSwipeLeft = -boxWidth * 0.7f
     var offsetX by remember { mutableFloatStateOf(0f) }
+    // TOUCH GESTURE TO DELETE TRANSACTION
     Box(
         modifier = Modifier
             .padding(top = 20.dp)
@@ -389,16 +397,17 @@ fun TransactionItem (transaction: Transactions, selectedCurrency : String, viewM
                     .align(Alignment.CenterEnd)
                     .padding(end = 25.dp)
                     .size(30.dp)
-                    .clickable { viewModel.deleteTransaction(transaction) },
+                    .clickable { viewModel.deleteTransaction(transaction) }, // RUN DELETE TRANSACTION ENDPOINT
                 tint = Color.White,
             )
         }
 
-
+        // MAIN TRANSACTION DISPLAY
         Box(
             modifier = Modifier
                 .then(
                     if (page == "Transaction") {
+                        // TOUCH GESTURES
                         Modifier
                             .offset { IntOffset(offsetX.roundToInt(), 0) }
                             .draggable(
@@ -414,6 +423,7 @@ fun TransactionItem (transaction: Transactions, selectedCurrency : String, viewM
                 )
                 .clip(RoundedCornerShape(8.dp))
                 .fillMaxWidth()
+                // STYLE IF TRANSACTION IS AN INCOME OR EXPENSE
                 .background(
                     if (transaction.transactionType == com.example.budgetly.data.transactionType.INCOME)
                         Color(0xFF21C277)
@@ -448,6 +458,7 @@ fun TransactionItem (transaction: Transactions, selectedCurrency : String, viewM
                 val amountPrefix = if (transaction.transactionType == com.example.budgetly.data.transactionType.INCOME) "+ " else "- "
                 val amountColor = if (transaction.transactionType == com.example.budgetly.data.transactionType.INCOME)
                     Color.White else Color(0xFF21C277)
+                // ADD CORRECT SIGN DEPENDING ON CURRENCY
                 val currencySymbol = if (selectedCurrency == "GBP") "£ " else if (selectedCurrency == "USD") "$ " else "€ "
                 val convertedAmount = transaction.amount
                 TextStyle(amountPrefix + currencySymbol + convertedAmount.toString(), 22, FontWeight.Black, amountColor)

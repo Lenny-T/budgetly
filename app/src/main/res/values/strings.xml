@@ -24,4 +24,9 @@
     <string name="view_all">View All</string>
     <string name="currency_value">%1$s%2$s</string>
     <string name="add_transaction_button_text">Add %1$s</string>
+    <string name="income2">Income</string>
+    <string name="Expense_Widget_Title">Expense</string>
+    <string name="Expense_Icon">Expense</string>
+    <string name="Income_Icome">Income</string>
+    <string name="income_icon">Income</string>
 </resources>

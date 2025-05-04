@@ -17,8 +17,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -41,19 +39,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.example.budgetly.R
+import com.example.budgetly.data.appScreens
 import com.example.budgetly.data.transactionType
 
 
 @Composable
-fun DashboardScreen (currencyViewModel: currencyViewModel){
+fun DashboardScreen (
+    currencyViewModel: currencyViewModel,
+    navController: NavHostController // FOR VIEW ALL NAVIGATION
+){
     val selectedCurrency = currencyViewModel.selectedCurrency.value
     val currencySymbol = if (selectedCurrency == "GBP" ) "£ " else if (selectedCurrency == "USD") "$ " else "€ "
     val viewModel: budgetlyViewModel = viewModel()
     val transactions by viewModel.transactionData.observeAsState(emptyList())
     var totalIncome by remember { mutableDoubleStateOf(0.0) }
     var totalIncomeMessage by remember { mutableStateOf("0.0") }
+    // RUNS THE THE GET TOTAL ENDPOINT ON THE INCOME
     LaunchedEffect(Unit) {
         viewModel.getTotalType(transactionType.INCOME) { total ->
             totalIncome = total
@@ -62,6 +64,7 @@ fun DashboardScreen (currencyViewModel: currencyViewModel){
     }
     var totalExpense by remember { mutableDoubleStateOf(0.0) }
     var totalExpenseMessage by remember { mutableStateOf("0.0") }
+    // RUNS THE GET TOTAL ENDPOINT ON THE EXPENSES
     LaunchedEffect(Unit) {
         viewModel.getTotalType(transactionType.EXPENSE) { total ->
             totalExpense = total
@@ -77,6 +80,7 @@ fun DashboardScreen (currencyViewModel: currencyViewModel){
             .padding(end = padding.dp, start = padding.dp)
             .fillMaxHeight()
     ){
+        // HEADING
         item {
             Spacer(modifier = Modifier.height(spacing))
             Text(
@@ -90,6 +94,7 @@ fun DashboardScreen (currencyViewModel: currencyViewModel){
             Spacer(modifier = Modifier.height(spacing))
         }
 
+        // MY BUDGET WIDGET
         item{
             Box(
                 modifier = Modifier
@@ -127,6 +132,7 @@ fun DashboardScreen (currencyViewModel: currencyViewModel){
             Spacer(modifier = Modifier.height(spacing))
         }
 
+        // INCOME AND EXPENSES WIDGETS
         item {
             Row (
                 modifier = Modifier
@@ -146,7 +152,7 @@ fun DashboardScreen (currencyViewModel: currencyViewModel){
                         .fillMaxWidth()
                         .weight(1f)
                 ){
-                    IncomeExpensesWidget("Income", currencySymbol, totalIncomeMessage)
+                    IncomeExpensesWidget(stringResource(R.string.income2), currencySymbol, totalIncomeMessage)
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Box(
@@ -161,12 +167,13 @@ fun DashboardScreen (currencyViewModel: currencyViewModel){
                         .fillMaxWidth()
                         .weight(1f)
                 ){
-                    IncomeExpensesWidget("Expense", currencySymbol, totalExpenseMessage)
+                    IncomeExpensesWidget(stringResource(R.string.Expense_Widget_Title), currencySymbol, totalExpenseMessage)
                 }
             }
             Spacer(modifier = Modifier.height(spacing))
         }
 
+        // TRANSACTION WIDGET
         item{
             Box(
                 modifier = Modifier
@@ -195,7 +202,6 @@ fun DashboardScreen (currencyViewModel: currencyViewModel){
                                 fontWeight = FontWeight.ExtraBold
                             ),
                             color = Color.Black,
-                            modifier = Modifier.clickable { /* TO-DO: NAVIGATE TO TRANSACTIONS */ }
                         )
 
                         Text(
@@ -205,7 +211,10 @@ fun DashboardScreen (currencyViewModel: currencyViewModel){
                                 fontFamily = soraFont,
                                 fontWeight = FontWeight.Bold,
                             ),
-                            color = Color.Black
+                            color = Color.Black,
+                            modifier = Modifier.clickable {
+                                navController.navigate(route = appScreens.Transactions.name)
+                            }
                         )
                     }
 
@@ -220,6 +229,7 @@ fun DashboardScreen (currencyViewModel: currencyViewModel){
                             color = Color(0xFF21C277)
                         )
                     } else {
+                        // SHOW A MAXIMUM OF 3 TRANSACTIONS
                         transactions.take(3).forEach { transaction ->
                             TransactionItem(transaction, selectedCurrency ?: "USD", viewModel, "Home")
                         }
@@ -236,12 +246,10 @@ fun DashboardScreen (currencyViewModel: currencyViewModel){
 @Composable
 fun IncomeExpensesWidget(type: String, currency: String, value: String){
     val spacing = 8
-    val navController: NavHostController = rememberNavController()
     Column (
         modifier = Modifier
             .fillMaxHeight()
             .fillMaxWidth(),
-//        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Column (
             modifier = Modifier
@@ -257,14 +265,14 @@ fun IncomeExpensesWidget(type: String, currency: String, value: String){
             ){
                 if (type == "Income"){
                     Image(
-                        painter = painterResource(id = R.drawable.income), // Replace with your vector's name
-                        contentDescription = "Expense",
-                        modifier = Modifier.size(40.dp) // Adjust the size as needed
+                        painter = painterResource(id = R.drawable.income),
+                        contentDescription = stringResource(R.string.Expense_Icon),
+                        modifier = Modifier.size(40.dp)
                     )
                 } else{
                     Image(
                         painter = painterResource(id = R.drawable.payments), // Replace with your vector's name
-                        contentDescription = "Income",
+                        contentDescription = stringResource(R.string.income_icon),
                         modifier = Modifier.size(40.dp) // Adjust the size as needed
                     )
                 }
@@ -291,32 +299,6 @@ fun IncomeExpensesWidget(type: String, currency: String, value: String){
                 color = Color.Black
             )
             Spacer(modifier = Modifier.height(spacing.dp))
-            Button(
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF21C277),
-                    contentColor = Color.White
-                ),
-                onClick = {
-                    if (type == "Income"){
-                        // TO-DO: MOVE TO TRANSACTION PAGE
-                        navController.navigate(route = "Transactions")
-                    } else{
-                        // TO-DO: MOVE TO TRANSACTION PAGE
-                        navController.navigate(route = "Transactions")
-                    }
-                },
-                shape = RoundedCornerShape(8.dp),
-            ) {
-                Text(
-                    text = stringResource(R.string.add_transaction_button_text, type),
-                    style = TextStyle(
-                        fontSize = 14.sp,
-                        fontFamily = soraFont,
-                        fontWeight = FontWeight.Normal
-                    ),
-                )
-            }
         }
     }
 }
