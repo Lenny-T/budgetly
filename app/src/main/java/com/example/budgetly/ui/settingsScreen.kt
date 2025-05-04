@@ -56,9 +56,9 @@ val soraFont = FontFamily(
 
 const val padding = 15
 
+// MAIN SETTINGS
 @Composable
 fun SettingsScreen(currencyViewModel: currencyViewModel) {
-//    var currencyExchange by rememberSaveable { mutableIntStateOf(1) }
     val currentCurrency = currencyViewModel.selectedCurrency.value
     LazyColumn(
         modifier = Modifier
@@ -79,15 +79,16 @@ fun SettingsScreen(currencyViewModel: currencyViewModel) {
     }
 }
 
-
+// CHANGE APP CURRENCY
 @Composable
 fun CurrencyChange(currency: String, currencyViewModel: currencyViewModel) {
     var expanded by remember { mutableStateOf(false) }
     var selectedCurrency by rememberSaveable { mutableIntStateOf(0) }
     val context = LocalContext.current
     val viewModel: budgetlyViewModel = viewModel()
-    var showPopUp by remember { mutableStateOf(false) }
+    var showPopUp = rememberSaveable { mutableStateOf(false) }
 
+    // AVAILABLE CURRENCIES
     val dropdownList = listOf(
         currencies(
             currency = "USD",
@@ -111,6 +112,7 @@ fun CurrencyChange(currency: String, currencyViewModel: currencyViewModel) {
             .fillMaxWidth()
             .padding(end = padding.dp, start = padding.dp),
     ) {
+        // CURRENCY BOX
         Box(
             modifier = Modifier
                 .shadow(
@@ -186,6 +188,8 @@ fun CurrencyChange(currency: String, currencyViewModel: currencyViewModel) {
             }
 
         }
+
+        // DELETE ALL TRANSACTION IN DATABASE
         Button(
             modifier = Modifier.padding(top = 10.dp),
             shape = RoundedCornerShape(8.dp),
@@ -193,7 +197,7 @@ fun CurrencyChange(currency: String, currencyViewModel: currencyViewModel) {
                 containerColor = Color.Red,
             ),
             onClick = {
-                showPopUp = true
+                showPopUp.value = true
             }
         ) {
             Text(
@@ -215,7 +219,7 @@ fun CurrencyChange(currency: String, currencyViewModel: currencyViewModel) {
                 containerColor = Color(0xFF21C277),
             ),
             onClick = {
-                /* TO-DO: MOVE TO GOOGLE AND SEARCH FOR THE CURRENT EXCHANGE RATES */
+                // INTENT THAT MOVES TO GOOGLE TO GET CURRENCY RATES
                 val intent = Intent(Intent.ACTION_VIEW).apply {
                      data = Uri.parse("https://www.google.com/search?q=${currencyViewModel.selectedCurrency.value}+rates")
                 }
@@ -233,13 +237,14 @@ fun CurrencyChange(currency: String, currencyViewModel: currencyViewModel) {
             )
         }
 
-        if (showPopUp){
+        // DELETE ALL TRANSACTION CONFIRMATION
+        if (showPopUp.value){
             AlertDialog(
                 modifier = Modifier
                     .clip(RoundedCornerShape(15.dp))
                     .background(Color.White)
                     .padding(20.dp),
-                onDismissRequest = { showPopUp = false }
+                onDismissRequest = { showPopUp.value = false }
             ) {
                 Column {
                     Text(
@@ -259,13 +264,13 @@ fun CurrencyChange(currency: String, currencyViewModel: currencyViewModel) {
                             contentColor = Color.White
                         ),
                         onClick = {
-                            viewModel.deleteAllTransactions()
+                            viewModel.deleteAllTransactions() // RUN DELETE ALL TRANSACTION DAO
                             Toast.makeText(
                                 context,
                                 "Transactions Deleted",
                                 Toast.LENGTH_SHORT
                             ).show()
-                            showPopUp = false
+                            showPopUp.value = false
                         }
                     ) {
                         Text(
