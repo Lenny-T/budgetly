@@ -28,7 +28,7 @@
         <provider
             android:name=".provider.transactionProvider"
             android:authorities="com.example.budgetly.provider"
-            android:exported="false" />
+            android:exported="true" />
     </application>
 
 </manifest>
