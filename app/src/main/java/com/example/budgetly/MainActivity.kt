@@ -1,5 +1,9 @@
 package com.example.budgetly
 
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -11,6 +15,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.budgetly.ui.BudgetlyApp
 import com.example.budgetly.ui.theme.BudgetlyTheme
 import com.example.budgetly.ui.currencyViewModel
+import java.util.Calendar
 
 
 class MainActivity : ComponentActivity() {
@@ -27,4 +32,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    // NOTIFICATIONS AT A SPECIFIC TIME
+
 }

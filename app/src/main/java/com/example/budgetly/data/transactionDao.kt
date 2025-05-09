@@ -1,7 +1,9 @@
 package com.example.budgetly.data
 
+import android.database.Cursor
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -22,5 +24,15 @@ interface transactionDao {
 
     @Query("SELECT SUM(amount) FROM Transactions WHERE transactionType = :type")
     suspend fun getTotalType(type: transactionType): Double
+
+    // FOR THE CONTENT PROVIDER
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insertTransaction(transaction: Transactions):Long
+    @Query("SELECT * FROM Transactions")
+    fun getAllTransactions(): Cursor
+    @Query("SELECT * FROM Transactions WHERE transactionID = :id")
+    fun getAllTransactionsWithID(id: Int): Cursor
+    @Delete
+    fun deleteMovie(transaction: Transactions): Int
 
 }

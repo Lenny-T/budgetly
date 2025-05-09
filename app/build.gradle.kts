@@ -53,7 +53,7 @@ android {
 dependencies {
     implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
     implementation ("androidx.compose.runtime:runtime-livedata:1.6.3")
-//    implementation("androidx.compose.material:material:1.7.8")
+    // implementation("androidx.compose.material:material:1.7.8")
     implementation("androidx.navigation:navigation-compose:2.8.9")
     implementation("androidx.room:room-common:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
@@ -73,5 +73,6 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+    androidTestImplementation("androidx.test:runner:1.6.2")
 
 }

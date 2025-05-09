@@ -1,5 +1,6 @@
 package com.example.budgetly.ui
 
+import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,6 +18,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -31,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -74,23 +79,52 @@ fun DashboardScreen (
     var budget by remember { mutableDoubleStateOf(0.0) }
     budget = totalIncome - totalExpense
     val spacing = 13.dp
+    val context = LocalContext.current
 
     LazyColumn(
         modifier = Modifier
             .padding(end = padding.dp, start = padding.dp)
             .fillMaxHeight()
     ){
+        // SHARE SHEET IMPLEMENTATION
+        val shareSheet = {
+            val shareText = "My Budget Is: $budget"
+            val shareIntent = Intent().apply {
+                action = Intent.ACTION_SEND
+                putExtra(Intent.EXTRA_TEXT, shareText)
+                type = "text/plain"
+            }
+            val chooserIntent = Intent.createChooser(shareIntent, "Share Budget")
+            if (chooserIntent.resolveActivity(context.packageManager) != null) {
+                context.startActivity(chooserIntent)
+            }
+        }
+
         // HEADING
         item {
             Spacer(modifier = Modifier.height(spacing))
-            Text(
-                text = stringResource(R.string.welcome),
-                style = TextStyle(
-                    fontSize = 30.sp,
-                    fontFamily = soraFont,
-                    fontWeight = FontWeight.Black
-                ),
-            )
+            Row (
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = stringResource(R.string.welcome),
+                    style = TextStyle(
+                        fontSize = 30.sp,
+                        fontFamily = soraFont,
+                        fontWeight = FontWeight.Black
+                    ),
+                )
+                // SHARE SHEET BUTTON
+                Icon(
+                    imageVector = Icons.Filled.Share,
+                    contentDescription = "Share Button",
+                    modifier = Modifier.clickable { shareSheet() }
+                        .size(30.dp),
+                )
+
+            }
             Spacer(modifier = Modifier.height(spacing))
         }
 
