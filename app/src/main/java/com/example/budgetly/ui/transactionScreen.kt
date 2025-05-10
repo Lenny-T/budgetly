@@ -40,6 +40,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableFloatStateOf
@@ -63,6 +64,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.budgetly.R
 import com.example.budgetly.data.Transactions
+import java.math.BigDecimal
+import java.math.RoundingMode
 import java.util.Calendar
 import kotlin.math.roundToInt
 
@@ -76,11 +79,9 @@ fun TransactionsPage (currencyViewModel: currencyViewModel){
     val errorMessage = rememberSaveable { mutableStateOf("") }
     val showErrorMessage = rememberSaveable { mutableStateOf(false) }
     var transactionType by rememberSaveable { mutableStateOf("Income") }
-
     val amount = rememberSaveable { mutableStateOf("") }
     val description = rememberSaveable { mutableStateOf("") }
     val date = rememberSaveable { mutableStateOf("") }
-
     val transactions by viewModel.transactionData.observeAsState(emptyList())
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
@@ -107,6 +108,11 @@ fun TransactionsPage (currencyViewModel: currencyViewModel){
             .fillMaxWidth(),
     ){
         // HEADING WITH ADD TRANSACTION BUTTON
+
+        //  item {
+        //      Text(text = currencyRate)
+        //  }
+
         item{
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -320,7 +326,7 @@ fun TransactionsPage (currencyViewModel: currencyViewModel){
             }
         } else {
             items(transactions) { transaction ->
-                TransactionItem(transaction, selectedCurrency ?: "USD", viewModel, "Transaction")
+                TransactionItem(transaction, selectedCurrency ?: "USD", viewModel, "Transaction", currencyViewModel)
             }
         }
     }
@@ -375,10 +381,14 @@ fun TextStyle (text : String, size : Int, weight: FontWeight, colour : Color){
 
 // TRANSACTION ITEMS
 @Composable
-fun TransactionItem (transaction: Transactions, selectedCurrency : String, viewModel: budgetlyViewModel, page: String){
+fun TransactionItem (transaction: Transactions, selectedCurrency : String, viewModel: budgetlyViewModel, page: String, currencyViewModel: currencyViewModel){
     val boxWidth = 300f
     val maxSwipeLeft = -boxWidth * 0.7f
     var offsetX by remember { mutableFloatStateOf(0f) }
+
+    // GET THE EXCHANGE RATE FROM THE API DATA USING THE CURRENCY VIEW MODEL
+    val currencyRate by currencyViewModel.currencyRate.collectAsState()
+
     // TOUCH GESTURE TO DELETE TRANSACTION
     Box(
         modifier = Modifier
@@ -452,13 +462,13 @@ fun TransactionItem (transaction: Transactions, selectedCurrency : String, viewM
                     TextStyle(transaction.description, 22, FontWeight.Black, textColor)
                     TextStyle(transaction.date, 18, FontWeight.Light, textColor)
                 }
-
                 val amountPrefix = if (transaction.transactionType == com.example.budgetly.data.transactionType.INCOME) "+ " else "- "
                 val amountColor = if (transaction.transactionType == com.example.budgetly.data.transactionType.INCOME)
                     Color.White else Color(0xFF21C277)
                 // ADD CORRECT SIGN DEPENDING ON CURRENCY
                 val currencySymbol = if (selectedCurrency == "GBP") "£ " else if (selectedCurrency == "USD") "$ " else "€ "
-                val convertedAmount = transaction.amount
+                // GET AMOUNT FROM THE DATABASE AND CONVERT THE CURRENCY DEPENDING ON THE CURRENCY CHOSEN. 2 DECIMAL PLACES.
+                val convertedAmount = BigDecimal(transaction.amount * currencyRate.toDouble()).setScale(2, RoundingMode.HALF_EVEN).toDouble()
                 TextStyle(amountPrefix + currencySymbol + convertedAmount.toString(), 22, FontWeight.Black, amountColor)
             }
         }

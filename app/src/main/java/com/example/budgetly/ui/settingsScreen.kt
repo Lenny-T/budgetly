@@ -4,6 +4,7 @@ package com.example.budgetly.ui
 
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -25,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -87,6 +89,8 @@ fun CurrencyChange(currency: String, currencyViewModel: currencyViewModel) {
     val context = LocalContext.current
     val viewModel: budgetlyViewModel = viewModel()
     var showPopUp = rememberSaveable { mutableStateOf(false) }
+    val currencyCode by currencyViewModel.currencyCode.collectAsState()
+    val currencyRate by currencyViewModel.currencyRate.collectAsState()
 
     // AVAILABLE CURRENCIES
     val dropdownList = listOf(
@@ -170,7 +174,10 @@ fun CurrencyChange(currency: String, currencyViewModel: currencyViewModel) {
                                 text = { Text(item.currency) },
                                 leadingIcon = { Icon(item.currencyLogo, contentDescription = null) },
                                 onClick = {
+                                    // RUNS THE FETCH FROM THE API TO GET THE CURRENT RATE OF THE CURRENCY SELECTED.
                                     currencyViewModel.setCurrency(item.currency)
+                                    currencyViewModel.fetchCurrencyRate(item.currency)
+                                    // DISPLAYS THE SELECTED CURRENCY.
                                     selectedCurrency = index
                                     Toast.makeText(
                                         context,
@@ -237,6 +244,8 @@ fun CurrencyChange(currency: String, currencyViewModel: currencyViewModel) {
             )
         }
 
+        // Text(currencyRate)
+
         // DELETE ALL TRANSACTION CONFIRMATION
         if (showPopUp.value){
             AlertDialog(
@@ -283,7 +292,6 @@ fun CurrencyChange(currency: String, currencyViewModel: currencyViewModel) {
                             color = Color.White,
                         )
                     }
-
                 }
 
             }

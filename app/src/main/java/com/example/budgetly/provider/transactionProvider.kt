@@ -5,7 +5,6 @@ import android.content.ContentUris
 import android.content.ContentValues
 import android.content.UriMatcher
 import android.database.Cursor
-import android.media.tv.TvContract
 import android.net.Uri
 import com.example.budgetly.data.Transactions
 import com.example.budgetly.data.transactionDao
@@ -13,7 +12,7 @@ import com.example.budgetly.data.transactionDatabase
 import com.example.budgetly.data.transactionType
 
 class transactionProvider : ContentProvider() {
-    private lateinit var TransactionDao: transactionDao
+    private lateinit var transactionDao: transactionDao
 
     /*
         OVERRIDE ON CREATE
@@ -22,13 +21,13 @@ class transactionProvider : ContentProvider() {
     */
     override fun onCreate(): Boolean {
         // GET AN INSTANCE OF THE transactionDao TO USE THE ROOM DATABASE
-        TransactionDao = transactionDatabase.getDatabase(context!!).TransactionDao()
+        transactionDao = transactionDatabase.getDatabase(context!!).TransactionDao()
         return true // SUCCESSFULLY LOADED
     }
 
     companion object{
-        private val transactions = 100
-        private val transactionsID = 101
+        private const val transactions = 100
+        private const val transactionsID = 101
         private val uriMatcher = UriMatcher(UriMatcher.NO_MATCH).apply {
             addURI(budgetlyContract.AUTHORITY, budgetlyContract.Transactions.PATH_TRANSACTION, transactions)
             addURI(budgetlyContract.AUTHORITY, "${budgetlyContract.Transactions.PATH_TRANSACTION}/#", transactionsID)
@@ -45,12 +44,11 @@ class transactionProvider : ContentProvider() {
         override fun query(uri: Uri, projection: Array<String>?, selection: String?, selectionArgs: Array<String>?, sortOrder: String?): Cursor? {}
     */
     override fun query(uri: Uri, projection: Array<String>?, selection: String?, selectionArgs: Array<String>?, sortOrder: String?): Cursor {
-        val match = uriMatcher.match(uri)
-        return when (match) {
-            transactions -> TransactionDao.getAllTransactions()
+        return when (uriMatcher.match(uri)) {
+            transactions -> transactionDao.getAllTransactions()
             transactionsID -> {
                 val id = ContentUris.parseId(uri)
-                TransactionDao.getAllTransactionsWithID(id.toInt())
+                transactionDao.getAllTransactionsWithID(id.toInt())
             }
             else -> throw IllegalArgumentException("Unknown URI: $uri")
         }
@@ -77,7 +75,7 @@ class transactionProvider : ContentProvider() {
                         enumValueOf<transactionType>(it)
                     } ?: transactionType.INCOME
                 )
-                TransactionDao.insertTransaction(transaction)
+                transactionDao.insertTransaction(transaction)
             }
             else -> throw IllegalArgumentException("Invalid URI for insert: $uri")
         }
@@ -105,7 +103,7 @@ class transactionProvider : ContentProvider() {
 
         override fun getType(): String? {}
     */
-    override fun getType(uri: Uri): String? {
+    override fun getType(uri: Uri): String {
         return when (uriMatcher.match(uri)) {
             transactions -> budgetlyContract.Transactions.CONTENT_TYPE
             transactionsID -> budgetlyContract.Transactions.CONTENT_ITEM_TYPE
@@ -124,11 +122,10 @@ class transactionProvider : ContentProvider() {
     */
     override fun delete(uri: Uri, selection: String?, selectionArgs: Array<String>?): Int {
         val context = context ?: return 0
-        val match = uriMatcher.match(uri)
-        return when (match) {
+        return when (uriMatcher.match(uri)) {
             transactionsID -> {
                 val id = ContentUris.parseId(uri).toInt()
-                val cursor = TransactionDao.getAllTransactionsWithID(id)
+                val cursor = transactionDao.getAllTransactionsWithID(id)
                 if (cursor.moveToFirst()) {
                     val transaction = Transactions(
                         transactionID = cursor.getInt(cursor.getColumnIndexOrThrow("transactionID")),
@@ -140,7 +137,7 @@ class transactionProvider : ContentProvider() {
                         } ?: transactionType.INCOME
                     )
                     cursor.close()
-                    TransactionDao.deleteMovie(transaction)
+                    transactionDao.deleteMovie(transaction)
                 } else {
                     cursor.close()
                     0

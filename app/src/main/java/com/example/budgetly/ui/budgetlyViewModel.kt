@@ -8,7 +8,19 @@ import com.example.budgetly.data.Transactions
 import com.example.budgetly.data.transactionDatabase
 import com.example.budgetly.data.transactionType
 import com.example.budgetly.data.transactionsRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.json.JSONArray
+import org.json.JSONObject
+import java.io.BufferedReader
+import java.io.IOException
+import java.io.InputStream
+import java.io.InputStreamReader
+import java.net.URL
+import javax.net.ssl.HttpsURLConnection
 
 class budgetlyViewModel(application:Application):AndroidViewModel(application) {
     private val transactionsRepo: transactionsRepository
@@ -47,4 +59,5 @@ class budgetlyViewModel(application:Application):AndroidViewModel(application) {
             onResult(totalIncome)
         }
     }
+
 }
