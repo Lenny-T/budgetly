@@ -79,7 +79,6 @@ fun TransactionsPage (currencyViewModel: currencyViewModel){
     val errorMessage = rememberSaveable { mutableStateOf("") }
     val showErrorMessage = rememberSaveable { mutableStateOf(false) }
     var transactionType by rememberSaveable { mutableStateOf("Income") }
-    // val currencyRate by currencyViewModel.currencyRate.collectAsState()
     val amount = rememberSaveable { mutableStateOf("") }
     val description = rememberSaveable { mutableStateOf("") }
     val date = rememberSaveable { mutableStateOf("") }
@@ -386,6 +385,8 @@ fun TransactionItem (transaction: Transactions, selectedCurrency : String, viewM
     val boxWidth = 300f
     val maxSwipeLeft = -boxWidth * 0.7f
     var offsetX by remember { mutableFloatStateOf(0f) }
+
+    // GET THE EXCHANGE RATE FROM THE API DATA USING THE CURRENCY VIEW MODEL
     val currencyRate by currencyViewModel.currencyRate.collectAsState()
 
     // TOUCH GESTURE TO DELETE TRANSACTION
@@ -461,12 +462,12 @@ fun TransactionItem (transaction: Transactions, selectedCurrency : String, viewM
                     TextStyle(transaction.description, 22, FontWeight.Black, textColor)
                     TextStyle(transaction.date, 18, FontWeight.Light, textColor)
                 }
-
                 val amountPrefix = if (transaction.transactionType == com.example.budgetly.data.transactionType.INCOME) "+ " else "- "
                 val amountColor = if (transaction.transactionType == com.example.budgetly.data.transactionType.INCOME)
                     Color.White else Color(0xFF21C277)
                 // ADD CORRECT SIGN DEPENDING ON CURRENCY
                 val currencySymbol = if (selectedCurrency == "GBP") "£ " else if (selectedCurrency == "USD") "$ " else "€ "
+                // GET AMOUNT FROM THE DATABASE AND CONVERT THE CURRENCY DEPENDING ON THE CURRENCY CHOSEN. 2 DECIMAL PLACES.
                 val convertedAmount = BigDecimal(transaction.amount * currencyRate.toDouble()).setScale(2, RoundingMode.HALF_EVEN).toDouble()
                 TextStyle(amountPrefix + currencySymbol + convertedAmount.toString(), 22, FontWeight.Black, amountColor)
             }

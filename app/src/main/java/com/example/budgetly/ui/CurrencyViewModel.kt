@@ -34,23 +34,23 @@ class currencyViewModel : ViewModel() {
 
     private val apiKey = "b3c51616211b118b8e36d86d93bf6a92"
 
-    // Fetches the currency rate from API and stores it
+    // FETCH THE CURRENCY RATES FROM exchangeratesapi.io
     fun fetchCurrencyRate(currency: String) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                // Check if the rate is already cached
+                // CHECK IF CACHED
                 if (currencyRatesMap.containsKey(currency)) {
                     val rate = currencyRatesMap[currency].toString()
                     _currencyCode.value = currency
                     _currencyRate.value = rate
                     Log.d("fetchCurrencyRate", "Cached Rate for $currency: $rate")
                 } else {
-                    // Fetch the rate if not cached
+                    // FETCH THE RATE IS NOT CACHED
                     val (code, rate) = getRate(currency)
                     if (rate.isNotEmpty()) {
                         _currencyCode.value = code
                         _currencyRate.value = rate
-                        // Save the rate to the map for future use
+                        // SAVE THE RATE TO THE MAP
                         currencyRatesMap[code] = rate.toDouble()
                     } else {
                         _currencyRate.value = "Error: Failed to fetch rate."
@@ -63,7 +63,7 @@ class currencyViewModel : ViewModel() {
         }
     }
 
-    // Sends a GET request to the URL and returns a JSON string
+    // SEND GET REQUEST TO URL. RETURN JSON.
     private fun getJSONFromApi(url: String): String {
         var result = ""
         var conn: HttpsURLConnection? = null
@@ -82,7 +82,7 @@ class currencyViewModel : ViewModel() {
         return result
     }
 
-    // Gets the current rate of the selected currency
+    // GET THE CURRENCY RATE OF THE SELECTED CURRENCY
     private fun getRate(currency: String): Pair<String, String> {
         val url1 = "https://api.exchangeratesapi.io/v1/latest?access_key=$apiKey&symbols=$currency&format=1"
         var rate = ""

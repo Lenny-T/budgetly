@@ -66,11 +66,14 @@ fun DashboardScreen (
     val transactions by viewModel.transactionData.observeAsState(emptyList())
     var totalIncome by remember { mutableDoubleStateOf(0.0) }
     var totalIncomeMessage by remember { mutableStateOf("0.0") }
+
+    // CURRENCY VIEW MODEL TO GET THE CURRENT CURRENCY
     val currencyRate by currencyViewModel.currencyRate.collectAsState()
     
     // RUNS THE THE GET TOTAL ENDPOINT ON THE INCOME
     LaunchedEffect(Unit) {
         viewModel.getTotalType(transactionType.INCOME) { total ->
+            // MULTIPLIED THE TOTAL INCOME WITH THE EXCHANGE RATE. 2 DECIMAL PLACES.
             totalIncome = BigDecimal(total * currencyRate.toDouble()).setScale(2, RoundingMode.HALF_EVEN).toDouble()
             totalIncomeMessage = totalIncome.toString()
         }
@@ -80,6 +83,7 @@ fun DashboardScreen (
     // RUNS THE GET TOTAL ENDPOINT ON THE EXPENSES
     LaunchedEffect(Unit) {
         viewModel.getTotalType(transactionType.EXPENSE) { total ->
+            // MULTIPLIED THE TOTAL EXPENSES WITH THE EXCHANGE RATE. 2 DECIMAL PLACES.
             totalExpense = BigDecimal(total * currencyRate.toDouble()).setScale(2, RoundingMode.HALF_EVEN).toDouble()
             totalExpenseMessage = totalExpense.toString()
         }
@@ -88,6 +92,7 @@ fun DashboardScreen (
     Log.d("income","$totalIncome")
     Log.d("expense","$totalExpense")
 
+    // ADDED THE TOTAL INCOME AND THE TOTAL EXPENSES. 2 DECIMAL PLACES.
     budget = BigDecimal(totalIncome - totalExpense).setScale(2, RoundingMode.HALF_EVEN).toDouble()
     val spacing = 13.dp
     val context = LocalContext.current

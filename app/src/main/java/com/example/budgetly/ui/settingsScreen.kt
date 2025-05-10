@@ -174,8 +174,10 @@ fun CurrencyChange(currency: String, currencyViewModel: currencyViewModel) {
                                 text = { Text(item.currency) },
                                 leadingIcon = { Icon(item.currencyLogo, contentDescription = null) },
                                 onClick = {
+                                    // RUNS THE FETCH FROM THE API TO GET THE CURRENT RATE OF THE CURRENCY SELECTED.
                                     currencyViewModel.setCurrency(item.currency)
                                     currencyViewModel.fetchCurrencyRate(item.currency)
+                                    // DISPLAYS THE SELECTED CURRENCY.
                                     selectedCurrency = index
                                     Toast.makeText(
                                         context,
