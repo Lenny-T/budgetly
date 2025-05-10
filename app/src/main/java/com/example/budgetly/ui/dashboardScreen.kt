@@ -1,6 +1,8 @@
 package com.example.budgetly.ui
 
+import android.annotation.SuppressLint
 import android.content.Intent
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableDoubleStateOf
@@ -47,8 +50,11 @@ import androidx.navigation.NavHostController
 import com.example.budgetly.R
 import com.example.budgetly.data.appScreens
 import com.example.budgetly.data.transactionType
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 
+@SuppressLint("QueryPermissionsNeeded")
 @Composable
 fun DashboardScreen (
     currencyViewModel: currencyViewModel,
@@ -60,10 +66,12 @@ fun DashboardScreen (
     val transactions by viewModel.transactionData.observeAsState(emptyList())
     var totalIncome by remember { mutableDoubleStateOf(0.0) }
     var totalIncomeMessage by remember { mutableStateOf("0.0") }
+    val currencyRate by currencyViewModel.currencyRate.collectAsState()
+    
     // RUNS THE THE GET TOTAL ENDPOINT ON THE INCOME
     LaunchedEffect(Unit) {
         viewModel.getTotalType(transactionType.INCOME) { total ->
-            totalIncome = total
+            totalIncome = BigDecimal(total * currencyRate.toDouble()).setScale(2, RoundingMode.HALF_EVEN).toDouble()
             totalIncomeMessage = totalIncome.toString()
         }
     }
@@ -72,12 +80,15 @@ fun DashboardScreen (
     // RUNS THE GET TOTAL ENDPOINT ON THE EXPENSES
     LaunchedEffect(Unit) {
         viewModel.getTotalType(transactionType.EXPENSE) { total ->
-            totalExpense = total
+            totalExpense = BigDecimal(total * currencyRate.toDouble()).setScale(2, RoundingMode.HALF_EVEN).toDouble()
             totalExpenseMessage = totalExpense.toString()
         }
     }
     var budget by remember { mutableDoubleStateOf(0.0) }
-    budget = totalIncome - totalExpense
+    Log.d("income","$totalIncome")
+    Log.d("expense","$totalExpense")
+
+    budget = BigDecimal(totalIncome - totalExpense).setScale(2, RoundingMode.HALF_EVEN).toDouble()
     val spacing = 13.dp
     val context = LocalContext.current
 
@@ -88,7 +99,7 @@ fun DashboardScreen (
     ){
         // SHARE SHEET IMPLEMENTATION
         val shareSheet = {
-            val shareText = "My Budget Is: $budget"
+            val shareText = "My Budget Is: $currencySymbol$budget"
             val shareIntent = Intent().apply {
                 action = Intent.ACTION_SEND
                 putExtra(Intent.EXTRA_TEXT, shareText)
@@ -99,6 +110,9 @@ fun DashboardScreen (
                 context.startActivity(chooserIntent)
             }
         }
+        //  item {
+        //     Text(text = currencyRate)
+        // }
 
         // HEADING
         item {
@@ -120,7 +134,8 @@ fun DashboardScreen (
                 Icon(
                     imageVector = Icons.Filled.Share,
                     contentDescription = "Share Button",
-                    modifier = Modifier.clickable { shareSheet() }
+                    modifier = Modifier
+                        .clickable { shareSheet() }
                         .size(30.dp),
                 )
 
@@ -265,7 +280,7 @@ fun DashboardScreen (
                     } else {
                         // SHOW A MAXIMUM OF 3 TRANSACTIONS
                         transactions.take(3).forEach { transaction ->
-                            TransactionItem(transaction, selectedCurrency ?: "USD", viewModel, "Home")
+                            TransactionItem(transaction, selectedCurrency ?: "USD", viewModel, "Home", currencyViewModel)
                         }
                     }
                 }
