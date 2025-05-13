@@ -38,6 +38,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+        // SEND A THE NOTIFICATIONS
         scheduleDailyNotification()
     }
 
@@ -53,12 +54,12 @@ class MainActivity : ComponentActivity() {
         )
 
         val calendar = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 19)  // 6 PM
-            set(Calendar.MINUTE, 42)
+            set(Calendar.HOUR_OF_DAY, 18) // SEND NOTIFICATION TO 6:30PM
+            set(Calendar.MINUTE, 30)
             set(Calendar.SECOND, 0)
         }
 
-        // If the time is already past for today, schedule for tomorrow
+        // IF THE TIME HAS PASSED SEND REQUEST TO THE NEXT DAY
         if (calendar.timeInMillis <= System.currentTimeMillis()) {
             calendar.add(Calendar.DAY_OF_MONTH, 1)
         }
