@@ -138,7 +138,7 @@ fun DashboardScreen (
                 // SHARE SHEET BUTTON
                 Icon(
                     imageVector = Icons.Filled.Share,
-                    contentDescription = "Share Button",
+                    contentDescription = stringResource(R.string.share_button),
                     modifier = Modifier
                         .clickable { shareSheet() }
                         .size(30.dp),

@@ -138,7 +138,7 @@ fun TransactionsPage (currencyViewModel: currencyViewModel){
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Add,
-                        contentDescription = "Add Transaction",
+                        contentDescription = stringResource(R.string.add_transactionS),
                         modifier = Modifier.size(40.dp),
                         tint = Color.White,
                     )
@@ -219,7 +219,7 @@ fun TransactionsPage (currencyViewModel: currencyViewModel){
                                 ) {
                                     Icon(
                                         imageVector = Icons.Filled.DateRange,
-                                        contentDescription = "Calendar",
+                                        contentDescription = stringResource(R.string.calendar),
                                         modifier = Modifier.size(25.dp),
                                     )
                                 }
@@ -400,7 +400,7 @@ fun TransactionItem (transaction: Transactions, selectedCurrency : String, viewM
         if (page == "Transaction"){
             Icon(
                 imageVector = Icons.Filled.Delete,
-                contentDescription = "Delete Transaction",
+                contentDescription = stringResource(R.string.delete_transaction),
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
                     .padding(end = 25.dp)

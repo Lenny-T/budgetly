@@ -29,4 +29,13 @@
     <string name="Expense_Icon">Expense</string>
     <string name="Income_Icome">Income</string>
     <string name="income_icon">Income</string>
+    <string name="share_button">Share Button</string>
+    <string name="usd">USD</string>
+    <string name="gbp">GBP</string>
+    <string name="eur">EUR</string>
+    <string name="drop_down">Drop Down</string>
+    <string name="current_rates">Current Rates</string>
+    <string name="add_transactionS">Add Transaction</string>
+    <string name="calendar">Calendar</string>
+    <string name="delete_transaction">Delete Transaction</string>
 </resources>
