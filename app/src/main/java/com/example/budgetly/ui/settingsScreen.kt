@@ -95,17 +95,17 @@ fun CurrencyChange(currency: String, currencyViewModel: currencyViewModel) {
     // AVAILABLE CURRENCIES
     val dropdownList = listOf(
         currencies(
-            currency = "USD",
+            currency = stringResource(R.string.usd),
             exchangeRate = 1.0,
             currencyLogo = painterResource(id = R.drawable.baseline_attach_money_24)
         ),
         currencies(
-            currency = "GBP",
+            currency = stringResource(R.string.gbp),
             exchangeRate = 0.78,
             currencyLogo = painterResource(id = R.drawable.baseline_currency_pound_24)
         ),
         currencies(
-            currency = "EUR",
+            currency = stringResource(R.string.eur),
             exchangeRate = 0.92,
             currencyLogo = painterResource(id = R.drawable.baseline_euro_24)
         )
@@ -162,7 +162,7 @@ fun CurrencyChange(currency: String, currencyViewModel: currencyViewModel) {
                     IconButton(onClick = { expanded = !expanded }) {
                         Icon(
                             painter = painterResource(id = R.drawable.baseline_keyboard_arrow_down_24),
-                            contentDescription = "Drop Down",
+                            contentDescription = stringResource(R.string.drop_down),
                         )
                     }
                     DropdownMenu(
@@ -234,7 +234,7 @@ fun CurrencyChange(currency: String, currencyViewModel: currencyViewModel) {
             }
         ) {
             Text(
-                text = ("Current Rates"),
+                text = (stringResource(R.string.current_rates)),
                 style = TextStyle(
                     fontSize = 18.sp,
                     fontFamily = soraFont,

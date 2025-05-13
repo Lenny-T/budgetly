@@ -7,6 +7,8 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 
 class NotificationReceiver : BroadcastReceiver() {
+
+    // DEFINE THE CONTENT OF THE NOTIFICATION AND CREATE IT
     override fun onReceive(context: Context, intent: Intent) {
         val notification = NotificationCompat.Builder(context, "notification_channel")
             .setSmallIcon(R.drawable.payments)
